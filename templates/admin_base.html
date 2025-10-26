@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>{% block title %}Panel de Seguimiento{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .sidebar { min-height: 100vh; background-color: #3f51b5; padding-top: 20px; }
+        .sidebar a { color: white; margin-bottom: 10px; display: block; padding: 10px; border-radius: 5px; text-decoration: none; }
+        .sidebar a:hover { background-color: #5c6bc0; }
+        .flash-messages { margin-top: 15px; }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <div class="row">
+            <nav class="col-md-3 col-lg-2 d-md-block sidebar">
+                <div class="position-sticky">
+                    <h4 class="text-white mb-4">Admin Rastreo</h4>
+                    
+                    <a href="{{ url_for('crear_paquete') }}" class="btn btn-warning w-100 mb-3">
+                        <i class="bi bi-plus-circle"></i> Crear Nuevo Rastreo
+                    </a>
+                    <a href="{{ url_for('listar_paquetes') }}" class="btn btn-light w-100 mb-4">
+                        <i class="bi bi-list-task"></i> Ver Paquetes
+                    </a>
+                    
+                    <hr class="text-white">
+                    <a href="{{ url_for('index') }}">Ver Sitio Público</a>
+                    <a href="{{ url_for('logout') }}" class="mt-5 text-danger">Cerrar Sesión ({{ current_user.username }})</a>
+                </div>
+            </nav>
+
+            <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+                <div class="flash-messages">
+                    {% with messages = get_flashed_messages(with_categories=true) %}
+                      {% if messages %}
+                        {% for category, message in messages %}
+                          <div class="alert alert-{{ category }}">{{ message }}</div>
+                        {% endfor %}
+                      {% endif %}
+                    {% endwith %}
+                </div>
+                
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

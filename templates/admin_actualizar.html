@@ -1,0 +1,58 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Actualizar {{ paquete.codigo_seguimiento }}{% endblock %}
+
+{% block content %}
+<h1 class="mt-4">Actualizar Paquete: <span class="badge bg-primary">{{ paquete.codigo_seguimiento }}</span></h1>
+<p class="lead">Crea un nuevo estado para añadirlo al historial de seguimiento.</p>
+
+<div class="card p-4 mb-4 border-success">
+    <h3 class="mb-4 text-success">Añadir Nuevo Estado de Seguimiento</h3>
+    <form action="{{ url_for('actualizar_paquete', tracking_id=paquete.id) }}" method="POST" enctype="multipart/form-data"> 
+        
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción del Estado:</label>
+            <select class="form-select" id="descripcion" name="descripcion" required>
+                <option value="" disabled selected>Selecciona un estado...</option>
+                {% for estado in estados_disponibles %}
+                    <option value="{{ estado }}">{{ estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label for="ubicacion" class="form-label">Ubicación (opcional):</label>
+            <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Ej: Centro de Distribución Jalisco">
+        </div>
+        
+        <div class="mb-3">
+            <label for="foto" class="form-label">Subir Fotografía (opcional):</label>
+            <input class="form-control" type="file" id="foto" name="foto" accept="image/*">
+            <small class="form-text text-muted">Acepta archivos PNG, JPG y GIF.</small>
+        </div>
+        
+        <button type="submit" class="btn btn-success btn-lg mt-3">Añadir Estado</button>
+    </form>
+</div>
+
+<h3 class="mt-5">Historial (Línea de Tiempo)</h3>
+<ul class="list-group">
+    {% for estado in estados %}
+        <li class="list-group-item">
+            <strong>{{ estado.descripcion }}</strong> 
+            <span class="badge bg-secondary float-end">{{ estado.fecha_hora.strftime('%Y-%m-%d %H:%M') }}</span>
+            {% if estado.ubicacion %}
+                <div class="text-muted small">Ubicación: {{ estado.ubicacion }}</div>
+            {% endif %}
+            {% if estado.foto_url %}
+                <div class="mt-2">
+                    <a href="{{ url_for('static', filename='fotos_paquetes/' + estado.foto_url.split('/')[-1]) }}" target="_blank" class="btn btn-sm btn-outline-info">Ver Foto</a>
+                </div>
+            {% endif %}
+        </li>
+    {% endfor %}
+</ul>
+
+<p class="mt-4"><a href="{{ url_for('listar_paquetes') }}" class="btn btn-outline-secondary">← Volver a la Lista</a></p>
+
+{% endblock %}

@@ -1,0 +1,8 @@
+# Archivos y carpetas a ignorar por Git
+venv/
+__pycache__/
+*.pyc
+
+# Archivos de base de datos y contenido de prueba
+database.db
+static/fotos_paquetes/

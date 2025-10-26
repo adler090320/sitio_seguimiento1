@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Seguimiento de Paquetes de E-commerce</title>
+    <style>
+        /* Estilos CSS para el cliente */
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #eef1f5; color: #333; }
+        .header { 
+            background-color: #3f51b5; 
+            color: white; 
+            padding: 20px 0; 
+            text-align: center;
+            position: relative; /* Necesario para posicionar el logo dentro */
+        }
+        
+        /* MODIFICACIÓN 1: Estilo para el logo en la parte superior izquierda */
+        .header .logo-container {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            display: flex;
+            align-items: center;
+        }
+        .header img { 
+            max-height: 80px; /* Logo más grande */
+            width: auto;
+            margin-right: 10px;
+            background: white; 
+            padding: 5px; 
+            border-radius: 5px;
+        }
+        /* Fin de la modificación del logo */
+
+        .container { max-width: 900px; margin: 30px auto; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); }
+        
+        /* Formulario de búsqueda */
+        .search-form { display: flex; margin-bottom: 30px; }
+        .search-form input[type="text"] { flex-grow: 1; padding: 12px; border: 2px solid #ccc; border-radius: 4px 0 0 4px; font-size: 16px; }
+        .search-form button { background-color: #ff9800; color: white; padding: 12px 20px; border: none; border-radius: 0 4px 4px 0; cursor: pointer; font-size: 16px; }
+        .search-form button:hover { background-color: #fb8c00; }
+
+        /* Estilos de la Línea de Tiempo */
+        .timeline { position: relative; padding: 10px 0; list-style: none; }
+        .timeline::before { content: ''; position: absolute; top: 0; bottom: 0; left: 30px; width: 3px; background-color: #e0e0e0; }
+        .timeline-item { margin-bottom: 20px; position: relative; padding-left: 60px; }
+        .timeline-item::before { content: ''; position: absolute; left: 24px; top: 5px; width: 15px; height: 15px; border-radius: 50%; background-color: #3f51b5; border: 3px solid white; z-index: 1; }
+        
+        /* Estilos de la Barra de Carga (Simulación) */
+        #loading-bar {
+            display: none; 
+            width: 100%;
+            height: 4px;
+            background-color: #f3f3f3;
+            border-radius: 2px;
+            margin-bottom: 20px;
+            overflow: hidden;
+        }
+        #loading-bar.active::after {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 100%;
+            background-color: #2196f3;
+            /* MODIFICACIÓN 2: Duración de la animación ajustada a 5 segundos */
+            animation: load 5s forwards; 
+        }
+
+        /* Opcional: Keyframe de la animación (simulación de progreso) */
+        @keyframes load {
+            0% { width: 0; }
+            100% { width: 100%; }
+        }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo-container">
+            <img src="{{ url_for('static', filename='yohe_logo.png') }}" alt="YOHE TRACKING Logo">
+        </div>
+        
+        <h1>YOHE TRACKING</h1>
+    </div>
+    <div class="container">
+        <div id="loading-bar"></div>
+
+        <form id="tracking-form" action="{{ url_for('track_package') }}" method="POST" class="search-form">
+            <input type="text" id="codigo_busqueda" name="codigo_busqueda" placeholder="Introduce tu código de seguimiento" required>
+            <button type="submit" id="search-button">Buscar Paquete</button>
+        </form>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+          {% if messages %}
+            {% for category, message in messages %}
+              <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+          {% endif %}
+        {% endwith %}
+
+        {% if tracking_data %}
+            <h2>Resultado para: <strong>{{ tracking_data.codigo }}</strong></h2>
+            
+            <ul class="timeline">
+                {% for estado in tracking_data.estados %}
+                    <li class="timeline-item">
+                        <div class="timeline-date">{{ estado.fecha_hora }}</div>
+                        <div class="timeline-description">{{ estado.descripcion }}</div>
+                        {% if estado.ubicacion and estado.ubicacion != 'N/A' %}
+                            <div class="timeline-location">Ubicación: {{ estado.ubicacion }}</div>
+                        {% endif %}
+                        {% if estado.foto_url %}
+                            <div class="timeline-image">
+                                <p>Foto Adjunta:</p>
+                                <img src="{{ estado.foto_url }}" alt="Fotografía del estado del paquete" style="max-width: 300px;">
+                            </div>
+                        {% endif %}
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="no-data">
+                <p>Ingresa un código de seguimiento para ver los detalles.</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <script>
+        document.getElementById('tracking-form').addEventListener('submit', function(event) {
+            const loadingBar = document.getElementById('loading-bar');
+            const searchButton = document.getElementById('search-button');
+            
+            // Muestra la barra de carga y activa la animación CSS
+            loadingBar.style.display = 'block';
+            loadingBar.classList.add('active');
+            
+            // Deshabilita el botón
+            searchButton.disabled = true;
+            searchButton.textContent = 'Buscando...';
+            
+            // Nota: Mantenemos el envío del formulario. En un entorno real,
+            // si el servidor respondiera muy rápido, el usuario vería el resultado
+            // antes de que la barra complete los 5 segundos. 
+            // Para forzar la espera de 5 segundos ANTES de enviar el formulario,
+            // necesitamos detener el envío por un momento:
+            
+            event.preventDefault(); // Detiene el envío del formulario
+            
+            setTimeout(function() {
+                // Después de 5 segundos, envía el formulario manualmente
+                event.target.submit(); 
+            }, 5000); // 5000 milisegundos = 5 segundos
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,37 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Crear Nuevo Rastreo{% endblock %}
+
+{% block content %}
+<h1 class="mt-4">Crear Nuevo Rastreo</h1>
+<p class="lead">El código de seguimiento será generado automáticamente al crear el paquete.</p>
+
+<div class="card p-4">
+    <form action="{{ url_for('crear_paquete') }}" method="POST" enctype="multipart/form-data"> 
+        <h3 class="mb-4">Estado Inicial del Paquete</h3>
+        
+        <div class="mb-3">
+            <label for="descripcion" class="form-label">Descripción del Primer Estado:</label>
+            <select class="form-select" id="descripcion" name="descripcion" required>
+                <option value="" disabled selected>Selecciona un estado...</option>
+                {% for estado in estados_disponibles %}
+                    <option value="{{ estado }}">{{ estado }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="mb-3">
+            <label for="ubicacion" class="form-label">Ubicación (opcional):</label>
+            <input type="text" class="form-control" id="ubicacion" name="ubicacion" placeholder="Ej: Oficina de Origen">
+        </div>
+        
+        <div class="mb-3">
+            <label for="foto" class="form-label">Subir Fotografía (opcional):</label>
+            <input class="form-control" type="file" id="foto" name="foto" accept="image/*">
+            <small class="form-text text-muted">Acepta archivos PNG, JPG y GIF.</small>
+        </div>
+        
+        <button type="submit" class="btn btn-success btn-lg mt-3">Crear Paquete y Estado Inicial</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "admin_base.html" %}
+
+{% block title %}Lista de Paquetes{% endblock %}
+
+{% block content %}
+<h1 class="mt-4">Lista de Paquetes</h1>
+
+<form action="{{ url_for('listar_paquetes') }}" method="GET" class="row g-3 align-items-center mb-4">
+    <div class="col-10">
+        <input type="text" class="form-control" name="q" placeholder="Buscar por código de seguimiento..." value="{{ busqueda }}">
+    </div>
+    <div class="col-2">
+        <button type="submit" class="btn btn-secondary w-100">Buscar</button>
+    </div>
+</form>
+
+<div class="card p-4">
+    {% if paquetes %}
+        <ul class="list-group">
+            {% for paquete in paquetes %}
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <strong>{{ paquete.codigo_seguimiento }}</strong> - Creado el {{ paquete.fecha_creacion.strftime('%Y-%m-%d') }}
+                        <br>
+                        <small class="text-muted">Estados: {{ paquete.estados | length }}</small>
+                    </div>
+                    <a href="{{ url_for('actualizar_paquete', tracking_id=paquete.id) }}" class="btn btn-sm btn-info">
+                        Actualizar Estado
+                    </a>
+                </li>
+            {% endfor %}
+        </ul>
+    {% else %}
+        <div class="alert alert-warning">
+            No se encontraron paquetes{% if busqueda %} con el código '{{ busqueda }}'{% endif %}.
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
